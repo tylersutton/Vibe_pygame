@@ -1,3 +1,8 @@
+x = 100
+y = 100
+import os
+os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
+
 import pygame
 
 from fov_functions import initialize_fov, recompute_fov
