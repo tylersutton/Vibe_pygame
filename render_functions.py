@@ -2,6 +2,13 @@ import math
 
 import pygame
 
+from enum import Enum
+
+class RenderOrder(Enum):
+    CORPSE = 1
+    ITEM = 2
+    ACTOR = 3
+
 def load_sprite(file_name):
     sprite = pygame.image.load(f"{file_name}")
     sprite = sprite.convert_alpha()
@@ -44,10 +51,14 @@ def render_all(game_map, fov_map, fov_radius, player, entities, screen):
                 screen.blit(game_map.tiles[x][y].sprite, (x*new_width, y*new_height))
 
     # print entities to screen
-    for entity in entities:
+    entities_in_render_order = sorted(entities, key=lambda x: x.render_order.value)
+    
+    for entity in entities_in_render_order:
         # entity.sprite.set_colorkey((0,0,0))
-        entity.sprite = pygame.transform.smoothscale(entity.sprite, (new_width, new_height))
-        screen.blit(entity.sprite, (entity.x * new_width, entity.y * new_height))
+        visible = fov_map[entity.x][entity.y]
+        if visible:
+            entity.sprite = pygame.transform.smoothscale(entity.sprite, (new_width, new_height))
+            screen.blit(entity.sprite, (entity.x * new_width, entity.y * new_height))
 
     # print shadows
     for x in range(0, game_map.width):
@@ -62,13 +73,6 @@ def render_all(game_map, fov_map, fov_radius, player, entities, screen):
             if visible or explored:
                 shadow = get_shadow(darken_percentage, new_width, new_height)
                 screen.blit(shadow, (x*new_width, y*new_height))
-
-
-
-    # print player to screen
-    # player.sprite.set_colorkey((0,0,0))
-    #player.sprite = pygame.transform.smoothscale(player.sprite, (20, 20))
-    screen.blit(player.sprite, (player.x * new_width, player.y * new_height))
 
     # show the new display on screen
     pygame.display.flip()

@@ -1,8 +1,10 @@
 import pygame
 
+from components.ai import BasicMonster
+from components.fighter import Fighter
 from entity import Entity
 from map_objects.game_map import GameMap
-from render_functions import load_sprite
+from render_functions import load_sprite, RenderOrder
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
@@ -13,13 +15,19 @@ def get_constants():
     screen_width = SCREEN_WIDTH
     screen_height = SCREEN_HEIGHT
 
+    start_hp = 100
+    start_def = 2
+    start_power = 5
+
     max_monsters_per_room = 10
 
     tile_size = 16
     
     sprites = {
         'blank':  load_sprite("assets/sprites/blank.png"),
-        'player': load_sprite("assets/sprites/image_not_found.png"),
+        'player': load_sprite("assets/sprites/at.png"),
+        'bobcat': load_sprite("assets/sprites/image_not_found.png"),
+        'wolf':   load_sprite("assets/sprites/image_not_found.png"),
         'wall':   load_sprite("assets/sprites/bush.png"),
         'grass0': load_sprite("assets/sprites/grass0.png"),
         'grass1': load_sprite("assets/sprites/grass1.png"),
@@ -34,6 +42,9 @@ def get_constants():
         'map_height': map_height,
         'screen_width': screen_width,
         'screen_height': screen_height,
+        'start_hp': start_hp,
+        'start_def': start_def,
+        'start_power': start_power,
         'max_monsters_per_room': max_monsters_per_room,
         'tile_size': tile_size,
         'sprites': sprites
@@ -45,11 +56,14 @@ def get_constants():
 def get_game_variables():
     screen: pygame.display = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     constants = get_constants()
-    player = Entity(constants['map_width'] // 2, constants['map_height'] // 2, 'player', constants['sprites'].get('player'))
+    
+    fighter_component = Fighter(hp=constants['start_hp'], defense=constants['start_def'], power=constants['start_power'])
+    player = Entity(x=constants['map_width'] // 2, y=constants['map_height'] // 2, name='player', sprite=constants['sprites'].get('player'), 
+        render_order=RenderOrder.ACTOR, fighter=fighter_component)
     entities = [player]
 
     game_map = GameMap(constants['map_width'], constants['map_height'], constants['sprites'])
-    game_map.make_map(player)
+    game_map.make_map(player, entities, constants['max_monsters_per_room'])
 
     return screen, player, entities, game_map
 

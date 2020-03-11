@@ -5,7 +5,10 @@ os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
 
 import pygame
 
+from death_functions import kill_monster, kill_player
+from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
+from game_states import GameStates
 from input_handlers import handle_keys
 from loaders.initialize_new_game import get_game_variables
 from render_functions import render_all
@@ -28,6 +31,8 @@ def play_game(game_map, player, entities, screen):
     
     clock = pygame.time.Clock()
 
+    game_state = GameStates.PLAYERS_TURN
+
     running = True
     while (running):
         #check events
@@ -35,13 +40,64 @@ def play_game(game_map, player, entities, screen):
             action = handle_keys(event)
             if action.get("exit"):
                 running = False
-            elif "move" in action:
-                move_x, move_y = action["move"]
-                if not game_map.is_blocked(player.x + move_x, player.y + move_y):
-                    player.move(move_x, move_y)
-                    fov_recompute = True
-        
+            
+            player_turn_results = []
 
+            if "move" in action and game_state == GameStates.PLAYERS_TURN:
+                dx, dy = action["move"]
+                dest_x = player.x + dx
+                dest_y = player.y + dy
+                if not game_map.is_blocked(dest_x, dest_y):
+                    target = get_blocking_entities_at_location(entities, dest_x, dest_y)
+                    if target:
+                        attack_results = player.fighter.attack(target)
+                        player_turn_results.extend(attack_results)
+                    else:
+                        player.move(dx, dy)
+                        fov_recompute = True
+                    game_state = GameStates.ENEMY_TURN
+        
+            for player_turn_result in player_turn_results:
+                message = player_turn_result.get('message')
+                dead_entity = player_turn_result.get('dead')
+
+                if message:
+                    print(message)
+
+                if dead_entity:
+                    if dead_entity == player:
+                        message, game_state = kill_player(dead_entity)
+                    else:
+                        message = kill_monster(dead_entity)
+
+                print(message)
+
+            if game_state == GameStates.ENEMY_TURN:
+                for entity in entities:
+                    if entity.ai:
+                        enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
+
+                        for enemy_turn_result in enemy_turn_results:
+                            message = enemy_turn_result.get('message')
+                            dead_entity = enemy_turn_result.get('dead')
+
+                            if message:
+                                print(message)
+
+                            if dead_entity:
+                                if dead_entity == player:
+                                    message, game_state = kill_player(dead_entity)
+                                else:
+                                    message = kill_monster(dead_entity)
+
+                                print(message)
+
+                                if game_state == GameStates.PLAYER_DEAD:
+                                    break
+                        if game_state == GameStates.PLAYER_DEAD:
+                            break
+
+                game_state = GameStates.PLAYERS_TURN
 
         # TODO: process events
 

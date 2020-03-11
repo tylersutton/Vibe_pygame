@@ -1,0 +1,7 @@
+Vibe --- dev log
+
+So far, I'm more or less equal in progress to the python libtcod tutorial, part 4.
+I have done some basic map generation with walls and collision, FOV, and rendering with pygame.
+
+TODO: implement a star pathfinding in entity.py for ai to use
+TODO: add different sprites for dead entities

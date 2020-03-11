@@ -1,6 +1,10 @@
 from random import randint
 
+from components.ai import BasicMonster
+from components.fighter import Fighter
+from entity import Entity
 from map_objects.tile import Tile
+from render_functions import RenderOrder
 
 class GameMap:
     def __init__(self, width, height, sprites):
@@ -33,7 +37,7 @@ class GameMap:
                 bg_tiles[x][y] = Tile(grass_img, False)
         return bg_tiles
 
-    def make_map(self, player):
+    def make_map(self, player, entities, max_monsters_per_room):
         fill_percentage = 44
         map_bound = 3
         spawn_radius = 3
@@ -94,7 +98,7 @@ class GameMap:
         self.fill_map_sprites()
 
         (player.x, player.y) = self.find_spawn(spawn_radius)
-        # self.place_entities(entities)
+        self.place_entities(entities, max_monsters_per_room)
 
 
     def find_spawn(self, radius):
@@ -151,9 +155,9 @@ class GameMap:
                     num_neighbors = num_neighbors + 1
         return num_neighbors
 
-    def place_entities(self, entities):
+    def place_entities(self, entities, max_monsters_per_room):
         # Get a random number of monsters
-        number_of_monsters = randint(0, MAX_MONSTERS_PER_ROOM)
+        number_of_monsters = randint(3, max_monsters_per_room)
 
         for _ in range(number_of_monsters):
             # Choose a random location in the room
@@ -162,9 +166,15 @@ class GameMap:
 
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
                 if randint(0, 100) < 50:
-                    monster = Entity(x, y, 'Bobcat', blocks=True)
+                    fighter_comp = Fighter(hp=10, defense=0, power=3)
+                    ai_comp = BasicMonster()
+                    monster = Entity(x, y, 'Bobcat', self.sprites.get('bobcat'), blocks=True,
+                        render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
                 else:
-                    monster = Entity(x, y, 'Wolf', blocks=True)
+                    fighter_comp = Fighter(hp=16, defense=1, power=4)
+                    ai_comp = BasicMonster()
+                    monster = Entity(x, y, 'Wolf', self.sprites.get('wolf'), blocks=True, 
+                        render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
 
                 entities.append(monster)
 
