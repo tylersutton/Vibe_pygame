@@ -9,10 +9,10 @@ class RenderOrder(Enum):
     ITEM = 2
     ACTOR = 3
 
-def load_sprite(file_name):
+def load_sprite(file_name, sprite_size):
     sprite = pygame.image.load(f"{file_name}")
     sprite = sprite.convert_alpha()
-    sprite = pygame.transform.smoothscale(sprite, (20, 20))
+    sprite = pygame.transform.smoothscale(sprite, sprite_size)
     return sprite
 
 def get_shadow(darken_percentage, shadow_x, shadow_y):
@@ -23,7 +23,7 @@ def get_shadow(darken_percentage, shadow_x, shadow_y):
         image.fill((0, 0, blueness, alpha_val))
     return image
 
-def render_all(game_map, fov_map, fov_radius, player, entities, screen):
+def render_all(game_map, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar):
     screen.fill((0,0,0))
     screen_width, screen_height = screen.get_width(), screen.get_height()
     new_width = screen_width // game_map.width
@@ -57,7 +57,7 @@ def render_all(game_map, fov_map, fov_radius, player, entities, screen):
         # entity.sprite.set_colorkey((0,0,0))
         visible = fov_map[entity.x][entity.y]
         if visible:
-            entity.sprite = pygame.transform.smoothscale(entity.sprite, (new_width, new_height))
+            # entity.sprite = pygame.transform.smoothscale(entity.sprite, (new_width, new_height))
             screen.blit(entity.sprite, (entity.x * new_width, entity.y * new_height))
 
     # print shadows
@@ -73,6 +73,13 @@ def render_all(game_map, fov_map, fov_radius, player, entities, screen):
             if visible or explored:
                 shadow = get_shadow(darken_percentage, new_width, new_height)
                 screen.blit(shadow, (x*new_width, y*new_height))
+
+    # update, draw health bar if necessary
+    if screen_health_bar.hp != player.fighter.hp or screen_health_bar.max_hp != player.fighter.max_hp:
+        screen_health_bar.update(player.fighter.hp, player.fighter.max_hp)
+        
+    screen.blit(screen_health_bar.sprite, (screen_health_bar.x, screen_health_bar.y))
+    manager.gui.draw_ui(screen)
 
     # show the new display on screen
     pygame.display.flip()
