@@ -3,9 +3,9 @@ class BasicMonster:
         results = []
         monster = self.owner
         
-        if fov_map[target.x][target.y]:
+        if fov_map[monster.x][monster.y]: # updated to always use player's fov (temp fix)
             if monster.distance_to(target) >= 2:
-                monster.move_towards(target.x, target.y, game_map, entities)
+                monster.move_astar(target.x, target.y, game_map, entities)
 
             elif target.fighter.hp > 0:
                 attack_results = monster.fighter.attack(target)

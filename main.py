@@ -12,20 +12,19 @@ from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
 from input_handlers import handle_keys
 from loaders.initialize_new_game import get_game_variables
+from profiler import profile
 from render_functions import render_all
 
-
-
+# @profile
 def main():
     pygame.init()
     
-    screen, manager, screen_health_bar, player, entities, game_map = get_game_variables()
+    screen, manager, screen_health_bar, entity_info, player, entities, game_map, map_surf, camera = get_game_variables()
 
-    play_game(game_map, player, entities, screen, manager, screen_health_bar)
+    play_game(game_map, map_surf, camera, player, entities, screen, manager, screen_health_bar, entity_info)
 
 
-
-def play_game(game_map, player, entities, screen, manager, screen_health_bar):
+def play_game(game_map, map_surf, camera, player, entities, screen, manager, screen_health_bar, entity_info):
     fov_radius = 8
     fov_recompute = True
     fov_map = initialize_fov(game_map)
@@ -110,10 +109,12 @@ def play_game(game_map, player, entities, screen, manager, screen_health_bar):
         fov_recompute = False
 
         manager.update(time_delta)
- 
-        render_all(game_map, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar)
 
-        print(int(clock.get_fps()))
+        camera.update()
+
+        render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar, entity_info)
+
+        # print(int(clock.get_fps()))
     
         
 

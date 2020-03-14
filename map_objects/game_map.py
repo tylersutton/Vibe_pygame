@@ -38,7 +38,7 @@ class GameMap:
         return bg_tiles
 
     def make_map(self, player, entities, max_monsters_per_room):
-        fill_percentage = 44
+        fill_percentage = 50
         map_bound = 3
         spawn_radius = 3
         path_half_width = (self.width + self.height) // 16
@@ -157,8 +157,8 @@ class GameMap:
 
     def place_entities(self, entities, max_monsters_per_room):
         # Get a random number of monsters
-        number_of_monsters = randint(3, max_monsters_per_room)
-
+        # number_of_monsters = randint(3, max_monsters_per_room)
+        number_of_monsters = max_monsters_per_room
         for _ in range(number_of_monsters):
             # Choose a random location in the room
             # radius of 1 because enemies will just walk around anyway
@@ -168,13 +168,13 @@ class GameMap:
                 if randint(0, 100) < 50:
                     fighter_comp = Fighter(hp=10, defense=0, power=3)
                     ai_comp = BasicMonster()
-                    monster = Entity(x, y, 'Bobcat', self.sprites.get('bobcat'), blocks=True,
-                        render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
+                    monster = Entity(x, y, 'Bobcat', self.sprites.get('bobcat'), self.sprites.get('bones'),
+                        blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
                 else:
                     fighter_comp = Fighter(hp=16, defense=1, power=4)
                     ai_comp = BasicMonster()
-                    monster = Entity(x, y, 'Wolf', self.sprites.get('wolf'), blocks=True, 
-                        render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
+                    monster = Entity(x, y, 'Wolf', self.sprites.get('wolf'), self.sprites.get('bones'),
+                        blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
 
                 entities.append(monster)
 
