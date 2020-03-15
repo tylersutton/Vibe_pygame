@@ -23,6 +23,9 @@ def handle_keys(key):
         elif button == pygame.K_z:
             return {"move": (0, 0)}
 
+        if button == pygame.K_g:
+            return {'pickup': True}
+
         if button == pygame.K_ESCAPE:
             return {"exit": True}
 

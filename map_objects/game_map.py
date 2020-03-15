@@ -2,6 +2,7 @@ from random import randint
 
 from components.ai import BasicMonster
 from components.fighter import Fighter
+from components.item import Item
 from entity import Entity
 from map_objects.tile import Tile
 from render_functions import RenderOrder
@@ -37,8 +38,8 @@ class GameMap:
                 bg_tiles[x][y] = Tile(grass_img, False)
         return bg_tiles
 
-    def make_map(self, player, entities, max_monsters_per_room):
-        fill_percentage = 50
+    def make_map(self, player, entities, max_monsters_per_room, max_items_per_room):
+        fill_percentage = 45
         map_bound = 3
         spawn_radius = 3
         path_half_width = (self.width + self.height) // 16
@@ -98,7 +99,7 @@ class GameMap:
         self.fill_map_sprites()
 
         (player.x, player.y) = self.find_spawn(spawn_radius)
-        self.place_entities(entities, max_monsters_per_room)
+        self.place_entities(entities, max_monsters_per_room, max_items_per_room)
 
 
     def find_spawn(self, radius):
@@ -155,10 +156,10 @@ class GameMap:
                     num_neighbors = num_neighbors + 1
         return num_neighbors
 
-    def place_entities(self, entities, max_monsters_per_room):
+    def place_entities(self, entities, max_monsters_per_room, max_items_per_room):
         # Get a random number of monsters
-        # number_of_monsters = randint(3, max_monsters_per_room)
-        number_of_monsters = max_monsters_per_room
+        number_of_monsters = randint(0, max_monsters_per_room)
+        number_of_items = randint(0, max_items_per_room)
         for _ in range(number_of_monsters):
             # Choose a random location in the room
             # radius of 1 because enemies will just walk around anyway
@@ -177,6 +178,15 @@ class GameMap:
                         blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
 
                 entities.append(monster)
+        
+        for _ in range(number_of_items):
+            x, y = self.find_spawn(1)
+            if not any([entity for entity in entities if entity.x == x and entity.y == y]):
+                item_component = Item()
+                item = Entity(x, y, 'Healing Potion', self.sprites.get('healing_potion'), render_order=RenderOrder.ITEM,
+                item=item_component)
+                entities.append(item)
+
 
     def is_blocked(self, x, y):
         if self.out_of_bounds(x, y) or self.tiles[x][y].blocked:

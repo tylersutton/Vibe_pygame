@@ -1,10 +1,10 @@
 import pygame_gui
 
 class UIManager:
-    def __init__(self, width, height):
+    def __init__(self, width, height, theme):
         self.width = width
         self.height = height
-        self.gui = pygame_gui.UIManager((self.width, self.height))
+        self.gui = pygame_gui.UIManager((self.width, self.height), theme)
         self.message_log = None
     
     def update(self, time_delta):

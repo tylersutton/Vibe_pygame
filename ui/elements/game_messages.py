@@ -25,7 +25,7 @@ class MessageLog:
         self.height = height
         self.manager = manager
 
-        self.text_box = UITextBox(self.text, 
+        self.text_box = UITextBox(self.text,
             pygame.Rect((self.x, self.y), (self.width, self.height)), self.manager)
 
 
@@ -35,7 +35,7 @@ class MessageLog:
         if self.text_box:
             self.text_box.kill()
         
-        self.text_box = UITextBox(self.text, 
+        self.text_box = UITextBox(self.text,
             pygame.Rect((self.x, self.y), (self.width, self.height)), self.manager)
         
 

@@ -4,5 +4,6 @@ So far, I'm more or less equal in progress to the python libtcod tutorial, part 
 I have done some basic map generation with walls and collision, FOV, and rendering with pygame.
 
 DONE: implement A* pathfinding in entity.py for ai to use
-TODO: add different sprites for dead entities
+DONE: add different sprites for dead entities
 DONE: fix game map size relative to screen
+TODO: add inventory menu
