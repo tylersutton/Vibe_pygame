@@ -40,15 +40,15 @@ def get_constants():
     health_bar_width = 150
     health_bar_height = 30
 
-    entity_info_x = 10
+    entity_info_x = map_on_screen_x
     entity_info_y = 480
-    entity_info_width = screen_width
+    entity_info_width = screen_width - entity_info_x
     entity_info_height = 16
 
     message_log_x = 0
     message_log_y = 500
-    message_log_width = screen_width
-    message_log_height = 100
+    message_log_width = screen_width - message_log_x
+    message_log_height = screen_height - message_log_y
 
     start_hp = 100
     start_def = 2
