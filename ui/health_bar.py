@@ -22,7 +22,7 @@ class HealthBar:
     def get_sprite(self):
         fill_percent = min(self.hp / self.max_hp, 1)
         sprite = pygame.Surface((self.width, self.height))
-        health_text = self.name + ': ' + str(self.hp) + '/' + str(self.max_hp)
+        health_text = self.name + ' hp: ' + str(self.hp) + '/' + str(self.max_hp)
         text = self.font.render(health_text, True, (255, 255, 255))
         text_rect = text.get_rect()
         text_rect.center = (self.width//2, self.height//4)

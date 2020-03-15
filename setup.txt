@@ -1,0 +1,13 @@
+1. download and run 64-bit MacOSX installer for python 3.8.2 from https://www.python.org/downloads/release/python-382/
+
+2. in terminal, type:   py --version
+    should show that you have version 3.8.2 installed
+
+3. in terminal, type:   py -m pip install -U pygame --user
+    If you get a warning about upgrading pip, follow the instructions to upgrade it 
+
+4. in terminal, type:   py -m pip install -U pygame_gui --user
+
+5. in terminal, go to the main directory of the downloaded repo and type:   py main.py
+
+6. Hopefully the game runs  ̿̿ ̿̿ ̿̿ ̿'̿'\̵͇̿̿\з= ( ▀ ͜͞ʖ▀) =ε/̵͇̿̿/’̿’̿ ̿ ̿̿ ̿̿ ̿̿

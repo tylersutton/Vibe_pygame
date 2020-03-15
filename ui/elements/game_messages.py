@@ -5,10 +5,10 @@ from pygame_gui.elements import UITextBox
 import textwrap
 
 class Message:
-    def __init__(self, text, color=""):
-        self.html_text = self.format_text(text, color)
+    def __init__(scroll_bar, text, color=""):
+        scroll_bar.html_text = scroll_bar.format_text(text, color)
     
-    def format_text(self, text, color=""):
+    def format_text(scroll_bar, text, color=""):
         formatted_text = ""
         if color == "":
             formatted_text = text
@@ -38,10 +38,12 @@ class MessageLog:
         self.text_box = UITextBox(self.text, 
             pygame.Rect((self.x, self.y), (self.width, self.height)), self.manager)
         
+
         """
         got this from Snayff, not quite sure how it works
         sauce: https://bitbucket.org/Snayff/notquiteparadise/src/develop/scripts/engine/ui/elements/message_log.py
         """
+
         if self.text_box.scroll_bar:
             scroll_bar = self.text_box.scroll_bar
             scroll_bar.scroll_wheel_down = True
@@ -56,4 +58,5 @@ class MessageLog:
             scroll_bar.start_percentage = scroll_bar.scroll_position / scroll_bar.scrollable_height
             if not scroll_bar.has_moved_recently:
                 scroll_bar.has_moved_recently = True
-            
+
+        
