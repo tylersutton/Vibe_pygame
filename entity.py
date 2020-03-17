@@ -65,6 +65,8 @@ class Entity:
                     get_blocking_entities_at_location(entities, new_x, new_y)):
                 self.move(new_x - self.x, new_y - self.y)
 
+    def distance(self, x, y):
+        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
     def distance_to(self, other):
         dx = other.x - self.x

@@ -27,7 +27,7 @@ class InventoryMenu(UIWindow):
             x = start_x
             y = start_y + (height * item_slot) + (gap * item_slot)
             self.buttons.append(pygame_gui.elements.UIButton(relative_rect=pygame.Rect((x, y), (width, height)),
-                                                 text=f"{inventory.items[item_slot].name}" + " [" + f"{inventory.items[item_slot].item.count}" + "]  (" + chr(ord('a')+item_slot) + ")", manager=manager,
+                                                 text=f"{inventory.items[item_slot].name}" + "[" + f"{inventory.items[item_slot].item.count}" + "] (" + chr(ord('a')+item_slot) + ")", manager=manager,
                                                  container=self.get_container(),
                                                  object_id=f"#item_button{item_slot}"))
     

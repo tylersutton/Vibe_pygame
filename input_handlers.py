@@ -3,18 +3,20 @@ import pygame
 from game_states import GameStates
 
 
-def handle_keys(key, game_state):
+def handle_keys(event, game_state):
     if game_state == GameStates.PLAYERS_TURN:
-        return handle_player_turn_keys(key)
+        return handle_player_turn_keys(event)
     elif game_state == GameStates.PLAYER_DEAD:
-        return handle_player_dead_keys(key)
+        return handle_player_dead_keys(event)
     elif game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
-        return handle_inventory_keys(key)
+        return handle_inventory_keys(event)
+    elif game_state == GameStates.TARGETING:
+        return handle_targeting_keys(event)
     return {}
 
-def handle_player_turn_keys(key):
-    if key.type == pygame.KEYDOWN:
-        button = key.key
+def handle_player_turn_keys(event):
+    if event.type == pygame.KEYDOWN:
+        button = event.key
         # movement keys
         if button == pygame.K_UP or button == pygame.K_k:
             return {"move": (0, -1)}
@@ -52,8 +54,43 @@ def handle_player_turn_keys(key):
             # Alt+Enter: toggle fullscreen
             return {"fullscreen": True}
 
-    elif key.type == pygame.QUIT:
+    elif event.type == pygame.QUIT:
         return {"exit": True}
+    return {}
+
+def handle_inventory_keys(event):
+    if event.type == pygame.KEYDOWN:
+        button = event.key
+        index = button - ord('a')
+        
+        if index >= 0:
+            return {"inventory_index": index}
+        
+        mods = pygame.key.get_pressed()
+        if button == pygame.K_RETURN and mods[pygame.K_RALT]:
+            # Alt+Enter: toggle fullscreen
+            return {"fullscreen": True}
+        if button == pygame.K_ESCAPE:
+            return {"exit": True}
+    return {}
+
+def handle_targeting_keys(event):
+    if event.type == pygame.KEYDOWN:
+        button = event.key
+        if button == pygame.K_ESCAPE:
+            return {"exit": True}
+    return {}
+
+def handle_mouse(event):
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        (x, y) = pygame.mouse.get_pos()
+        (l, m, r) = pygame.mouse.get_pressed()
+        if l:
+            return {"left_click": (x, y)}
+        elif r:
+            return {"right_click": (x, y)}
+        elif m:
+            return {"middle_click": (x, y)}
     return {}
 
 def handle_player_dead_keys(key):
@@ -70,20 +107,4 @@ def handle_player_dead_keys(key):
         if button == pygame.K_ESCAPE:
             return {"exit": True}
 
-    return {}
-
-def handle_inventory_keys(key):
-    if key.type == pygame.KEYDOWN:
-        button = key.key
-        index = button - ord('a')
-        
-        if index >= 0:
-            return {"inventory_index": index}
-        
-        mods = pygame.key.get_pressed()
-        if button == pygame.K_RETURN and mods[pygame.K_RALT]:
-            # Alt+Enter: toggle fullscreen
-            return {"fullscreen": True}
-        if button == pygame.K_ESCAPE:
-            return {"exit": True}
     return {}

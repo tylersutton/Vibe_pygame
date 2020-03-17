@@ -1,8 +1,4 @@
-import pygame
-
 import pygame_gui
-
-from pygame_gui.core import UIFontDictionary
 
 class UIManager:
     def __init__(self, width, height, theme):

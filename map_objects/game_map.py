@@ -1,12 +1,15 @@
 from random import randint
 
+import pygame
+
 from components.ai import BasicMonster
 from components.fighter import Fighter
 from components.item import Item
 from entity import Entity
-from item_functions import heal
+from item_functions import cast_confuse, cast_fireball, cast_lightning, heal
 from map_objects.tile import Tile
 from render_functions import RenderOrder
+from ui.elements.game_messages import Message
 
 class GameMap:
     def __init__(self, width, height, sprites):
@@ -183,11 +186,31 @@ class GameMap:
         for _ in range(number_of_items):
             x, y = self.find_spawn(1)
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-                item_component = Item(use_function=heal, amount=4)
-                item = Entity(x, y, 'Healing Potion', self.sprites.get('healing_potion'), render_order=RenderOrder.ITEM,
-                item=item_component)
-                entities.append(item)
-
+                item_chance = randint(0, 100)
+                
+                if item_chance < 70:
+                    item_component = Item(use_function=heal, amount=4)
+                    item = Entity(x, y, 'Healing Potion', self.sprites.get('healing_potion'), render_order=RenderOrder.ITEM,
+                        item=item_component)
+                    entities.append(item)
+                elif item_chance < 80:
+                    item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
+                        'Left-click a target tile for the fireball, or right-click to cancel.', pygame.Color('cyan')),
+                                          damage=12, radius=3)
+                    item = Entity(x, y, 'Fireball Scroll', self.sprites.get('fireball_scroll'), render_order=RenderOrder.ITEM,
+                        item=item_component)
+                    entities.append(item)
+                elif item_chance < 90:
+                    item_component = Item(use_function=cast_confuse, targeting=True, targeting_message=Message(
+                        'Left-click an enemy to confuse it, or right-click to cancel.', pygame.Color('cyan')))
+                    item = Entity(x, y, 'Confusion Scroll', self.sprites.get('confusion_scroll'), render_order=RenderOrder.ITEM,
+                        item=item_component)
+                    entities.append(item)
+                else:
+                    item_component = Item(use_function=cast_lightning, damage=20, maximum_range=5)
+                    item = Entity(x, y, 'Lightning Scroll', self.sprites.get('lightning_scroll'), render_order=RenderOrder.ITEM,
+                                  item=item_component)
+                    entities.append(item)
 
     def is_blocked(self, x, y):
         if self.out_of_bounds(x, y) or self.tiles[x][y].blocked:

@@ -6,7 +6,7 @@ class Message:
     def __init__(self, text, color=pygame.Color('white'), size=5):
         self.html_text = self.format_text(text, color, size)
     
-    """ 
+    """
     convert text to html format 
     """
     def format_text(self, text, color, size):

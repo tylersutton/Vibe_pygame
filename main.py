@@ -10,10 +10,10 @@ from death_functions import kill_monster, kill_player
 from entity import get_blocking_entities_at_location
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
-from input_handlers import handle_keys
+from input_handlers import handle_keys, handle_mouse
 from loaders.initialize_new_game import get_game_variables
 from profiler import profile
-from render_functions import render_all
+from render_functions import render_all, get_map_coords
 from ui.elements.game_messages import Message
 
 # @profile
@@ -35,6 +35,8 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
     game_state = GameStates.PLAYERS_TURN
     previous_game_state = game_state
 
+    targeting_item = None
+
     running = True
     while (running):
         time_delta = clock.tick(60)/1000.0
@@ -42,6 +44,7 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
         #check events
         for event in pygame.event.get():
             action = handle_keys(event, game_state)
+            mouse_action = handle_mouse(event)
             
             move = action.get("move")
             pickup = action.get("pickup")
@@ -49,12 +52,9 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
             drop_inventory = action.get("drop_inventory")
             inventory_index = action.get("inventory_index")
             fullscreen = action.get("fullscreen")
-            
-            if action.get("exit"):
-                if game_state == GameStates.SHOW_INVENTORY:
-                    game_state = previous_game_state
-                else:
-                    running = False
+
+            left_click = mouse_action.get('left_click')
+            right_click = mouse_action.get('right_click')
 
             player_turn_results = []
 
@@ -94,9 +94,29 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
                     player.inventory.items):
                 item = player.inventory.items[inventory_index]
                 if game_state == GameStates.SHOW_INVENTORY:
-                    player_turn_results.extend(player.inventory.use(item))
+                    player_turn_results.extend(player.inventory.use(item, entities=entities, fov_map=fov_map))
                 elif game_state == GameStates.DROP_INVENTORY:
                     player_turn_results.extend(player.inventory.drop_item(item))
+
+            if game_state == GameStates.TARGETING:
+                if left_click:
+                    target_x, target_y = left_click
+                    target_x, target_y = get_map_coords(target_x, target_y, map_surf.width // camera.width, 
+                                                        map_surf.height // camera.height, camera, map_surf)
+
+                    item_use_results = player.inventory.use(targeting_item, entities=entities, fov_map=fov_map,
+                                                        target_x=target_x, target_y=target_y)
+                    player_turn_results.extend(item_use_results)
+                elif right_click:
+                    player_turn_results.append({'targeting_cancelled': True})
+
+            if action.get("exit"):
+                if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+                    game_state = previous_game_state
+                elif game_state == GameStates.TARGETING:
+                    player_turn_results.append({'targeting_cancelled': True})
+                else:
+                    running = False
 
             for player_turn_result in player_turn_results:
                 message = player_turn_result.get('message')
@@ -104,6 +124,8 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
                 item_added = player_turn_result.get('item_added')
                 item_consumed = player_turn_result.get('consumed')
                 item_dropped = player_turn_result.get('item_dropped')
+                targeting = player_turn_result.get('targeting')
+                targeting_cancelled = player_turn_result.get('targeting_cancelled')
 
                 if message:
                     manager.add_to_message_log(message)
@@ -122,10 +144,23 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
 
                 if item_consumed:
                     game_state = GameStates.ENEMY_TURN
-                
+
                 if item_dropped:
                     entities.append(item_dropped)
                     game_state = GameStates.ENEMY_TURN
+
+                if targeting:
+                    previous_game_state = GameStates.PLAYERS_TURN
+                    game_state = GameStates.TARGETING
+
+                    targeting_item = targeting
+
+                    manager.add_to_message_log(targeting_item.item.targeting_message)
+
+                if targeting_cancelled:
+                    game_state = previous_game_state
+
+                    manager.add_to_message_log(Message('Targeting cancelled'))
 
             if game_state == GameStates.ENEMY_TURN:
                 for entity in entities:

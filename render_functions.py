@@ -1,14 +1,9 @@
 import math
-
 import pygame
 
-from profiler import profile
-
 from game_states import GameStates
-
-from map_objects.map_surface import MapSurface
-
 from ui.elements.inventory_menu import InventoryMenu
+from profiler import profile
 
 from enum import Enum
 

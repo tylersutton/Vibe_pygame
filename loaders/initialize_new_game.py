@@ -1,5 +1,4 @@
 import pygame
-import pygame_gui
 
 from components.fighter import Fighter
 from components.inventory import Inventory
@@ -10,7 +9,6 @@ from map_objects.map_surface import MapSurface
 from render_functions import load_sprite, RenderOrder
 from ui.elements.entity_info import EntityInfo
 from ui.elements.game_messages import MessageLog
-from ui.elements.inventory_menu import InventoryMenu
 from ui.health_bar import HealthBar
 from ui.manager import UIManager
 
@@ -70,7 +68,7 @@ def get_constants():
     start_inventory = 20
 
     max_monsters_per_room = 20
-    max_items_per_room = 100
+    max_items_per_room = 200
 
     tile_width = map_on_screen_width // camera_width
     tile_height = map_on_screen_height // camera_height
@@ -91,6 +89,9 @@ def get_constants():
         'grass3': load_sprite("assets/sprites/grass3.png", tile_size),
         'grass4': load_sprite("assets/sprites/grass4.png", tile_size),
         'healing_potion': load_sprite("assets/sprites/healing_potion.png", tile_size),
+        'lightning_scroll': load_sprite("assets/sprites/lightning_scroll.png", tile_size),
+        'fireball_scroll': load_sprite("assets/sprites/fireball_scroll.png", tile_size),
+        'confusion_scroll': load_sprite("assets/sprites/confusion_scroll.png", tile_size),
         'image_not_found_path': load_sprite("assets/sprites/image_not_found.png", tile_size)
     }
 
