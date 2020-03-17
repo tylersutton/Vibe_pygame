@@ -4,7 +4,11 @@ import pygame
 
 from profiler import profile
 
+from game_states import GameStates
+
 from map_objects.map_surface import MapSurface
+
+from ui.elements.inventory_menu import InventoryMenu
 
 from enum import Enum
 
@@ -40,7 +44,7 @@ def get_names_under_mouse(tile_x, tile_y, entities, fov_map):
     return names.capitalize()
 
 # @profile
-def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar, entity_info):
+def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar, entity_info, game_state):
     # clear surfaces from last frame
     screen.fill((0,0,0))
     map_surf.clear_sprite()
@@ -103,14 +107,26 @@ def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities
     # update, draw health bar if necessary
     if screen_health_bar.hp != player.fighter.hp or screen_health_bar.max_hp != player.fighter.max_hp:
         screen_health_bar.update(player.fighter.hp, player.fighter.max_hp)
-    screen.blit(screen_health_bar.sprite, (screen_health_bar.x, screen_health_bar.y))
+    screen.blit(screen_health_bar.sprite, (screen_health_bar.rect.x, screen_health_bar.rect.y))
     
     # update, draw entity info
     mouse_x, mouse_y = pygame.mouse.get_pos()
     tile_x, tile_y = get_map_coords(mouse_x, mouse_y, new_width, new_height, camera, map_surf)
     entity_info.update_text(get_names_under_mouse(tile_x, tile_y, entities, fov_map))
 
-    screen.blit(entity_info.get_sprite(), (entity_info.x, entity_info.y))
+    screen.blit(entity_info.get_sprite(), (entity_info.rect.x, entity_info.rect.y))
+
+    if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY) and not manager.inventory_menu:
+        inv_rect = pygame.Rect((map_surf.x, map_surf.y), (map_surf.width, map_surf.height))
+        text = "Inventory    (click or press correspoding key to use)"
+        if game_state == GameStates.DROP_INVENTORY:
+            text = "Inventory    (click or press correspoding key to drop)"
+        
+        inv_menu = InventoryMenu(inv_rect, text, player.inventory, manager.gui)
+        manager.init_inventory_menu(inv_menu)
+        
+    elif game_state not in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY) and manager.inventory_menu:
+        manager.delete_inventory_menu()
 
     manager.gui.draw_ui(screen)
 

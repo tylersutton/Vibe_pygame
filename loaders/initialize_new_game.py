@@ -10,6 +10,7 @@ from map_objects.map_surface import MapSurface
 from render_functions import load_sprite, RenderOrder
 from ui.elements.entity_info import EntityInfo
 from ui.elements.game_messages import MessageLog
+from ui.elements.inventory_menu import InventoryMenu
 from ui.health_bar import HealthBar
 from ui.manager import UIManager
 
@@ -30,8 +31,10 @@ def get_constants():
     map_on_screen_height = screen_height - map_on_screen_y - 120
     map_rect = pygame.Rect((map_on_screen_x, map_on_screen_y), (map_on_screen_width, map_on_screen_height))
 
-    camera_width = 56
-    camera_height = 32
+    camera_width = 42
+    camera_height = 24
+    # camera_width = 56
+    # camera_height = 32
 
     health_bar_bg_color = (50, 50, 50)
     health_bar_fg_color = (255, 0, 0)
@@ -39,16 +42,27 @@ def get_constants():
     health_bar_y = 10
     health_bar_width = 150
     health_bar_height = 30
+    health_bar_rect = pygame.Rect((health_bar_x, health_bar_y), (health_bar_width, health_bar_height))
+
 
     entity_info_x = map_on_screen_x
     entity_info_y = 480
     entity_info_width = screen_width - entity_info_x
     entity_info_height = 16
+    entity_info_rect = pygame.Rect((entity_info_x, entity_info_y), (entity_info_width, entity_info_height))
 
     message_log_x = 0
     message_log_y = 500
     message_log_width = screen_width - message_log_x
     message_log_height = screen_height - message_log_y
+    message_log_rect = pygame.Rect((message_log_x, message_log_y), (message_log_width, message_log_height))
+
+    inventory_menu_x = map_on_screen_x + 10
+    inventory_menu_y = map_on_screen_y + 10
+    inventory_menu_width = map_on_screen_width - 20
+    inventory_menu_height = map_on_screen_height - 20
+    inventory_menu_rect = pygame.Rect((inventory_menu_x, inventory_menu_y),
+                                        (inventory_menu_width, inventory_menu_height))
 
     start_hp = 100
     start_def = 2
@@ -56,7 +70,7 @@ def get_constants():
     start_inventory = 20
 
     max_monsters_per_room = 20
-    max_items_per_room = 20
+    max_items_per_room = 100
 
     tile_width = map_on_screen_width // camera_width
     tile_height = map_on_screen_height // camera_height
@@ -91,18 +105,10 @@ def get_constants():
         'camera_height': camera_height,
         'health_bar_bg_color': health_bar_bg_color,
         'health_bar_fg_color': health_bar_fg_color,
-        'health_bar_x': health_bar_x,
-        'health_bar_y': health_bar_y,
-        'health_bar_width': health_bar_width,
-        'health_bar_height': health_bar_height,
-        'entity_info_x': entity_info_x,
-        'entity_info_y': entity_info_y,
-        'entity_info_width': entity_info_width,
-        'entity_info_height': entity_info_height,
-        'message_log_x': message_log_x,
-        'message_log_y': message_log_y,
-        'message_log_width': message_log_width,
-        'message_log_height': message_log_height,
+        'health_bar_rect': health_bar_rect,
+        'entity_info_rect': entity_info_rect, 
+        'message_log_rect': message_log_rect, 
+        'inventory_menu_rect': inventory_menu_rect,
         'start_hp': start_hp,
         'start_def': start_def,
         'start_power': start_power,
@@ -123,13 +129,12 @@ def get_game_variables():
     constants = get_constants()
     pygame.display.set_caption(constants['title'])
     
-    manager = UIManager(constants['screen_width'], constants['screen_height'], constants['theme1'])
+    manager = UIManager(width=constants['screen_width'], height=constants['screen_height'], theme=constants['theme1'])
     
-    message_log = MessageLog(constants['message_log_x'], constants['message_log_y'],
-        constants['message_log_width'], constants['message_log_height'], manager.gui)
+    message_log = MessageLog(rect=constants['message_log_rect'], manager=manager.gui)
     
     manager.init_message_log(message_log)
-    
+
     fighter_component = Fighter(hp=constants['start_hp'], defense=constants['start_def'], power=constants['start_power'])
     inventory_component = Inventory(constants['start_inventory'])
     player = Entity(x=constants['map_width'] // 2, y=constants['map_height'] // 2, name='player',
@@ -140,11 +145,9 @@ def get_game_variables():
 
     screen_health_bar = HealthBar(name=player.name, hp=player.fighter.hp, max_hp=player.fighter.max_hp,
         bg_color=constants['health_bar_bg_color'], fg_color=constants['health_bar_fg_color'],
-        x=constants['health_bar_x'], y=constants['health_bar_y'],
-        width=constants['health_bar_width'], height=constants['health_bar_height'])
+        rect=constants['health_bar_rect'])
 
-    entity_info = EntityInfo(constants['entity_info_x'], constants['entity_info_y'],
-        constants['entity_info_width'], constants['entity_info_height'])
+    entity_info = EntityInfo(constants['entity_info_rect'])
 
     map_surf = MapSurface(constants['map_rect'])
 

@@ -1,14 +1,15 @@
 from game_states import GameStates
 from render_functions import RenderOrder
+from ui.elements.game_messages import Message
 
 def kill_player(player):
     player.name = player.name + '(dead)'
     player.sprite = player.dead_sprite
-    return 'You died!', GameStates.PLAYER_DEAD
+    return Message('You died!'), GameStates.PLAYER_DEAD
 
 
 def kill_monster(monster):
-    death_message = '{0} is dead!'.format(monster.name.capitalize())
+    death_message = Message('{0} is dead!'.format(monster.name.capitalize()))
     
     monster.blocks = False
     monster.fighter = None

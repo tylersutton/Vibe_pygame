@@ -2,39 +2,40 @@ import pygame
 from pygame_gui.core import UIWindow
 from pygame_gui.elements import UITextBox
 
-import textwrap
-
 class Message:
-    def __init__(self, text, color="FFFFFF"):
-        self.html_text = self.format_text(text, color)
+    def __init__(self, text, color=pygame.Color('white'), size=5):
+        self.html_text = self.format_text(text, color, size)
     
-    def format_text(self, text, color="CCCCCC"):
-        # <font face=’verdana’ color=’#000000’ size=3.5></font>
-        formatted_text = "<font face=\'verdana\' color =\'#" + color + "\' size=8>" + text + "</font>"
+    """ 
+    convert text to html format 
+    """
+    def format_text(self, text, color, size):
+        color_hex = ""
+        if isinstance(color, str):
+            color_hex = color
+        else:
+            for i in range(0, 3):
+                color_hex += "%02x" % color[i] # convert color from tuple to hex if necessary
+        formatted_text = "<font face=\'data\' color =\'#" + color_hex + "\' size=" + str(size) + ">" + text + "</font>"
         return formatted_text
 
 class MessageLog(UIWindow):
-    def __init__(self, x, y, width, height, manager):
+    def __init__(self, rect, manager):
         self.text = Message("Welcome to Vibe!").html_text + "<br>"
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
+        self.rect = rect
         self.text_box = None
         self.manager = manager
-        super().__init__(pygame.Rect((self.x, self.y), (self.width, self.height)), manager, ["message_log"])
-        self.text_box = UITextBox(self.text,
-            pygame.Rect((self.x, self.y), (self.width, self.height)), self.manager)
+        super().__init__(self.rect, manager, ["message_log"])
+        self.text_box = UITextBox(self.text, self.rect, self.manager, wrap_to_height=False, layer_starting_height=1)
 
-    def add_message(self, message_text, message_color="888888"):
-        message = Message(text=message_text, color=message_color)
+    def add_message(self, message):
         self.text += message.html_text + "<br>"
         if self.text_box:
             self.text_box.kill()
         
         self.text_box = UITextBox(self.text,
-            pygame.Rect((0, 0), (self.width, self.height)), self.manager, wrap_to_height=False, container=self.get_container())
-        
+            pygame.Rect((0, 0), (self.rect.width, self.rect.height)), self.manager, wrap_to_height=False, layer_starting_height=1, container=self.get_container())
+        self.text_box.parse_html_into_style_data()
 
         """
         got this from Snayff, not quite sure how it works

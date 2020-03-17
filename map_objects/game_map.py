@@ -4,6 +4,7 @@ from components.ai import BasicMonster
 from components.fighter import Fighter
 from components.item import Item
 from entity import Entity
+from item_functions import heal
 from map_objects.tile import Tile
 from render_functions import RenderOrder
 
@@ -182,7 +183,7 @@ class GameMap:
         for _ in range(number_of_items):
             x, y = self.find_spawn(1)
             if not any([entity for entity in entities if entity.x == x and entity.y == y]):
-                item_component = Item()
+                item_component = Item(use_function=heal, amount=4)
                 item = Entity(x, y, 'Healing Potion', self.sprites.get('healing_potion'), render_order=RenderOrder.ITEM,
                 item=item_component)
                 entities.append(item)

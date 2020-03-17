@@ -14,6 +14,7 @@ from input_handlers import handle_keys
 from loaders.initialize_new_game import get_game_variables
 from profiler import profile
 from render_functions import render_all
+from ui.elements.game_messages import Message
 
 # @profile
 def main():
@@ -32,6 +33,7 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
     clock = pygame.time.Clock()
 
     game_state = GameStates.PLAYERS_TURN
+    previous_game_state = game_state
 
     running = True
     while (running):
@@ -39,13 +41,24 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
         
         #check events
         for event in pygame.event.get():
-            action = handle_keys(event)
+            action = handle_keys(event, game_state)
+            
+            move = action.get("move")
+            pickup = action.get("pickup")
+            show_inventory = action.get("show_inventory")
+            drop_inventory = action.get("drop_inventory")
+            inventory_index = action.get("inventory_index")
+            fullscreen = action.get("fullscreen")
+            
             if action.get("exit"):
-                running = False
+                if game_state == GameStates.SHOW_INVENTORY:
+                    game_state = previous_game_state
+                else:
+                    running = False
 
             player_turn_results = []
 
-            if "move" in action and game_state == GameStates.PLAYERS_TURN:
+            if move and game_state == GameStates.PLAYERS_TURN:
                 dx, dy = action["move"]
                 dest_x = player.x + dx
                 dest_y = player.y + dy
@@ -59,7 +72,7 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
                         fov_recompute = True
                 game_state = GameStates.ENEMY_TURN
         
-            elif "pickup" in action and game_state == GameStates.PLAYERS_TURN:
+            elif pickup and game_state == GameStates.PLAYERS_TURN:
                 for entity in entities:
                     if entity.item and entity.x == player.x and entity.y == player.y:
                         pickup_results = player.inventory.add_item(entity)
@@ -67,12 +80,30 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
 
                         break
                 else:
-                    manager.add_to_message_log('There is nothing here to pick up.')
+                    manager.add_to_message_log(Message('There is nothing here to pick up.'))
+
+            elif show_inventory:
+                previous_game_state = game_state
+                game_state = GameStates.SHOW_INVENTORY
+
+            elif drop_inventory:
+                previous_game_state = game_state
+                game_state = GameStates.DROP_INVENTORY
+
+            if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(
+                    player.inventory.items):
+                item = player.inventory.items[inventory_index]
+                if game_state == GameStates.SHOW_INVENTORY:
+                    player_turn_results.extend(player.inventory.use(item))
+                elif game_state == GameStates.DROP_INVENTORY:
+                    player_turn_results.extend(player.inventory.drop_item(item))
 
             for player_turn_result in player_turn_results:
                 message = player_turn_result.get('message')
                 dead_entity = player_turn_result.get('dead')
                 item_added = player_turn_result.get('item_added')
+                item_consumed = player_turn_result.get('consumed')
+                item_dropped = player_turn_result.get('item_dropped')
 
                 if message:
                     manager.add_to_message_log(message)
@@ -87,7 +118,13 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
                 
                 if item_added:
                     entities.remove(item_added)
+                    game_state = GameStates.ENEMY_TURN
 
+                if item_consumed:
+                    game_state = GameStates.ENEMY_TURN
+                
+                if item_dropped:
+                    entities.append(item_dropped)
                     game_state = GameStates.ENEMY_TURN
 
             if game_state == GameStates.ENEMY_TURN:
@@ -128,7 +165,7 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
 
         camera.update()
 
-        render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar, entity_info)
+        render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar, entity_info, game_state)
 
         # print(int(clock.get_fps()))
     

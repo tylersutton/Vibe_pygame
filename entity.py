@@ -1,5 +1,6 @@
 import math
 
+
 from render_functions import RenderOrder
 from utility import astar
 
@@ -32,6 +33,11 @@ class Entity:
         
         if self.inventory:
             self.inventory.owner = self
+
+    def copy(self):
+        new_entity = Entity(self.x, self.y, self.name, self.sprite, self.dead_sprite, self.blocks, self.render_order,
+                self.fighter, self.ai, self.item, self.inventory)
+        return new_entity
 
     def move(self, dx, dy):
         # Move the entity by a given amount
