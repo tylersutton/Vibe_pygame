@@ -6,4 +6,16 @@ I have done some basic map generation with walls and collision, FOV, and renderi
 DONE: implement A* pathfinding in entity.py for ai to use
 DONE: add different sprites for dead entities
 DONE: fix game map size relative to screen
-TODO: add inventory menu
+DONE: add inventory menu
+
+I don't update this enough. Whoops.
+I'm currently up to date making my own version of the python tcod tutorial, up to part 9.
+I also have a camera that follows the player, and my menus are using pygame_gui instead of libtcod.
+Not actually using libtcod at all in this project. I'm using pygame and pygame_gui for any graphics,
+and I made my own implementations for A*, fov, etc.
+
+TODO: make buttons work in inventory menu
+TODO: implement saving/loading
+TODO: make a main menu
+TODO: rethink map generation and entity placement using graph grammars
+TODO:   ADD MORE COMMENTS JESUS THERE ARE NO COMMENTS
