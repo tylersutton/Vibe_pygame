@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 
 from game_states import GameStates
 
@@ -54,8 +55,6 @@ def handle_player_turn_keys(event):
             # Alt+Enter: toggle fullscreen
             return {"fullscreen": True}
 
-    elif event.type == pygame.QUIT:
-        return {"exit": True}
     return {}
 
 def handle_inventory_keys(event):
@@ -72,6 +71,26 @@ def handle_inventory_keys(event):
             return {"fullscreen": True}
         if button == pygame.K_ESCAPE:
             return {"exit": True}
+    return {}
+
+def handle_main_menu(event, main_menu):
+    if event.type == pygame.KEYDOWN:
+        button = event.key
+        if button == pygame.K_a:
+            return {'new_game': True}
+        elif button == pygame.K_b:
+            return {'load_game': True}
+        elif button == pygame.K_c or button == pygame.K_ESCAPE:
+            return {'exit': True}
+    elif event.type == pygame.USEREVENT:
+        if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == main_menu.new_game_button:
+                return {'new_game': True}
+            elif event.ui_element == main_menu.load_game_button:
+                return {'load_game': True}
+            elif event.ui_element == main_menu.exit_button:
+                return {'exit': True}
+
     return {}
 
 def handle_targeting_keys(event):
@@ -93,9 +112,19 @@ def handle_mouse(event):
             return {"middle_click": (x, y)}
     return {}
 
-def handle_player_dead_keys(key):
-    if key.type == pygame.KEYDOWN:
-        button = key.key
+def handle_inventory_buttons(event, game_state, inventory_menu):
+    if event.type == pygame.USEREVENT and game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY):
+        if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+            if inventory_menu:
+                for index in range(0, len(inventory_menu.buttons)):
+                    if event.ui_element == inventory_menu.buttons[index]:
+                        return {'inventory_index': index}
+    return {}
+
+
+def handle_player_dead_keys(event):
+    if event.type == pygame.KEYDOWN:
+        button = event.key
 
         if button == pygame.K_i:
             return {'show_inventory': True}
@@ -106,5 +135,4 @@ def handle_player_dead_keys(key):
             return {"fullscreen": True}
         if button == pygame.K_ESCAPE:
             return {"exit": True}
-
     return {}

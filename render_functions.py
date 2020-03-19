@@ -2,7 +2,7 @@ import math
 import pygame
 
 from game_states import GameStates
-from ui.elements.inventory_menu import InventoryMenu
+from ui.elements.menus import InventoryMenu
 from profiler import profile
 
 from enum import Enum
@@ -41,7 +41,7 @@ def get_names_under_mouse(tile_x, tile_y, entities, fov_map):
 # @profile
 def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities, screen, manager, screen_health_bar, entity_info, game_state):
     # clear surfaces from last frame
-    screen.fill((0,0,0))
+    screen.fill((0, 0, 0))
     map_surf.clear_sprite()
 
     new_width = map_surf.width // camera.width
@@ -56,7 +56,7 @@ def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities
                 if visible:
                     game_map.bg_tiles[x][y].explored = True
                 if visible or explored:
-                    map_surf.add_sprite(game_map.bg_tiles[x][y].sprite, (x - camera.x)*new_width, (y-camera.y)*new_height)
+                    map_surf.add_sprite(map_surf.map_sprites.get(game_map.bg_tiles[x][y].tile_type), (x - camera.x)*new_width, (y-camera.y)*new_height)
                     # map_surf.blit(game_map.bg_tiles[x][y].sprite, (x*new_width, y*new_height))
     
     # then print map tiles
@@ -68,7 +68,7 @@ def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities
                 if visible:
                     game_map.tiles[x][y].explored = True
                 if visible or explored:
-                    map_surf.add_sprite(game_map.tiles[x][y].sprite, (x - camera.x)*new_width, (y-camera.y)*new_height)
+                    map_surf.add_sprite(map_surf.map_sprites.get(game_map.tiles[x][y].tile_type), (x - camera.x)*new_width, (y-camera.y)*new_height)
                     # map_surf.blit(game_map.tiles[x][y].sprite, (x*new_width, y*new_height))
 
     # print entities to map
@@ -77,7 +77,7 @@ def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities
     for entity in entities_in_render_order:
         visible = fov_map[entity.x][entity.y]
         if visible:
-            map_surf.add_sprite(entity.sprite, (entity.x-camera.x)*new_width, (entity.y-camera.y)*new_height)
+            map_surf.add_sprite(map_surf.map_sprites.get(entity.sprite_type), (entity.x-camera.x)*new_width, (entity.y-camera.y)*new_height)
             # map_surf.blit(entity.sprite, (entity.x * new_width, entity.y * new_height))
 
     # print shadows to map
@@ -113,15 +113,15 @@ def render_all(game_map, map_surf, camera, fov_map, fov_radius, player, entities
 
     if game_state in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY) and not manager.inventory_menu:
         inv_rect = pygame.Rect((map_surf.x, map_surf.y), (map_surf.width, map_surf.height))
-        text = "Inventory    (click or press correspoding key to use)"
+        text = "Inventory    (click or press corresponding key to use)"
         if game_state == GameStates.DROP_INVENTORY:
-            text = "Inventory    (click or press correspoding key to drop)"
+            text = "Inventory    (click or press corresponding key to drop)"
         
-        inv_menu = InventoryMenu(inv_rect, text, player.inventory, manager.gui)
+        inv_menu = InventoryMenu(rect=inv_rect, text=text, inventory=player.inventory, manager=manager.gui)
         manager.init_inventory_menu(inv_menu)
         
     elif game_state not in (GameStates.SHOW_INVENTORY, GameStates.DROP_INVENTORY) and manager.inventory_menu:
-        manager.delete_inventory_menu()
+        manager.kill_inventory_menu()
 
     manager.gui.draw_ui(screen)
 

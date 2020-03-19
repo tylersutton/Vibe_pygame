@@ -1,5 +1,3 @@
-import copy
-
 from ui.elements.game_messages import Message
 
 class Inventory:
@@ -7,8 +5,8 @@ class Inventory:
         self.capacity = capacity
         self.num_items = 0
         self.items = []
-    
-    def add_item(self, item):
+
+    def add_item(self, item_entity):
         results = []
 
         if self.num_items >= self.capacity:
@@ -18,19 +16,20 @@ class Inventory:
             })
         else:
             results.append({
-                'item_added': item,
-                'message': Message('You pick up the {0}!'.format(item.name))
+                'item_added': item_entity,
+                'message': Message('You pick up the {0}!'.format(item_entity.name))
             })
             for the_item in self.items:
-                if the_item.name == item.name:
+                if the_item.name == item_entity.name:
                     the_item.item.count += 1
                     break
             else:
-                self.items.append(item)
+                item_entity.item.count += 1
+                self.items.append(item_entity)
             self.num_items += 1
 
         return results
-    
+
     def use(self, item_entity, **kwargs):
         results = []
 
@@ -68,6 +67,7 @@ class Inventory:
         new_item.y = self.owner.y
 
         self.remove_item(item)
-        results.append({'item_dropped': new_item, 'message': Message('You dropped the {0}'.format(item.name))})
+        results.append({'item_dropped': new_item, 'message':
+                        Message('You dropped the {0}'.format(item.name))})
 
         return results

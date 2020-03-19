@@ -8,13 +8,13 @@ class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
-    def __init__(self, x, y, name, sprite, dead_sprite=None, blocks=False, render_order=RenderOrder.CORPSE,
+    def __init__(self, x, y, name, sprite_type, dead_sprite_type=None, blocks=False, render_order=RenderOrder.CORPSE,
             fighter=None, ai=None, item=None, inventory=None):
         self.x = x
         self.y = y
         self.name = name
-        self.sprite = sprite
-        self.dead_sprite = dead_sprite
+        self.sprite_type = sprite_type
+        self.dead_sprite_type = dead_sprite_type
         self.blocks = blocks
         self.render_order = render_order
         self.fighter = fighter
@@ -35,7 +35,7 @@ class Entity:
             self.inventory.owner = self
 
     def copy(self):
-        new_entity = Entity(self.x, self.y, self.name, self.sprite, self.dead_sprite, self.blocks, self.render_order,
+        new_entity = Entity(self.x, self.y, self.name, self.sprite_type, self.dead_sprite_type, self.blocks, self.render_order,
                 self.fighter, self.ai, self.item, self.inventory)
         return new_entity
 

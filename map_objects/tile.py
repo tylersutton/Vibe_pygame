@@ -2,8 +2,8 @@ class Tile:
     """
     A tile on a map. It may or may not be blocked, and may or may not block sight.
     """
-    def __init__(self, sprite, blocked, block_sight=None):
-        self.sprite = sprite
+    def __init__(self, tile_type, blocked, block_sight=None):
+        self.tile_type = tile_type
         self.blocked = blocked
         self.explored = False # temp for now
         

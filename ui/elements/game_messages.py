@@ -57,4 +57,5 @@ class MessageLog(UIWindow):
             if not scroll_bar.has_moved_recently:
                 scroll_bar.has_moved_recently = True
 
-        
+    def kill(self):
+        self.text_box.kill()

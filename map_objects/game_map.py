@@ -12,33 +12,32 @@ from render_functions import RenderOrder
 from ui.elements.game_messages import Message
 
 class GameMap:
-    def __init__(self, width, height, sprites):
+    def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.sprites = sprites
         self.tiles = self.init_tiles()
         self.bg_tiles = self.init_bg_tiles()
 
     def init_tiles(self):
-        tiles = [[Tile(self.sprites.get('blank'), False) for y in range(self.height)] for x in range(self.width)]
+        tiles = [[Tile('blank', False) for y in range(self.height)] for x in range(self.width)]
         return tiles
     
     def init_bg_tiles(self):
-        bg_tiles = [[Tile(self.sprites.get('grass0'), False) for y in range(self.height)] for x in range(self.width)]
-        grass_img = self.sprites.get('grass0')
+        bg_tiles = [[('grass0', False) for y in range(self.height)] for x in range(self.width)]
+        grass_img = 'grass0'
         for y in range(self.height):
             for x in range(self.width):
                 rand_num = randint(0, 4)
                 if rand_num == 0:
-                    grass_img = self.sprites.get('grass0')
+                    grass_img = 'grass0'
                 if rand_num == 1:
-                    grass_img = self.sprites.get('grass1')
+                    grass_img = 'grass1'
                 if rand_num == 2:
-                    grass_img = self.sprites.get('grass2')
+                    grass_img = 'grass2'
                 if rand_num == 3:
-                    grass_img = self.sprites.get('grass3')
+                    grass_img = 'grass3'
                 if rand_num == 4:
-                    grass_img = self.sprites.get('grass4')
+                    grass_img = 'grass4'
                 bg_tiles[x][y] = Tile(grass_img, False)
         return bg_tiles
 
@@ -130,10 +129,10 @@ class GameMap:
             for x in range(self.width):
                 wall = self.tiles[x][y].blocked
                 if wall:
-                    self.tiles[x][y].sprite = self.sprites.get('wall')
+                    self.tiles[x][y].tile_type = 'wall'
                 
     def smooth_tiles(self):
-        temp = [[Tile(self.sprites.get('blank'), False) for y in range(self.height)] for x in range(self.width)]
+        temp = [[Tile('blank', False) for y in range(self.height)] for x in range(self.width)]
         for y in range(self.height):
             for x in range(self.width):
                 neighbors = self.count_neighbors(x, y)
@@ -173,12 +172,12 @@ class GameMap:
                 if randint(0, 100) < 50:
                     fighter_comp = Fighter(hp=10, defense=0, power=3)
                     ai_comp = BasicMonster()
-                    monster = Entity(x, y, 'Bobcat', self.sprites.get('bobcat'), self.sprites.get('bones'),
+                    monster = Entity(x, y, 'Bobcat', 'bobcat', 'bones',
                         blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
                 else:
                     fighter_comp = Fighter(hp=16, defense=1, power=4)
                     ai_comp = BasicMonster()
-                    monster = Entity(x, y, 'Wolf', self.sprites.get('wolf'), self.sprites.get('bones'),
+                    monster = Entity(x, y, 'Wolf', 'wolf', 'bones',
                         blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_comp, ai=ai_comp)
 
                 entities.append(monster)
@@ -190,25 +189,25 @@ class GameMap:
                 
                 if item_chance < 70:
                     item_component = Item(use_function=heal, amount=4)
-                    item = Entity(x, y, 'Healing Potion', self.sprites.get('healing_potion'), render_order=RenderOrder.ITEM,
+                    item = Entity(x, y, 'Healing Potion', 'healing_potion', render_order=RenderOrder.ITEM,
                         item=item_component)
                     entities.append(item)
                 elif item_chance < 80:
                     item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
                         'Left-click a target tile for the fireball, or right-click to cancel.', pygame.Color('cyan')),
                                           damage=12, radius=3)
-                    item = Entity(x, y, 'Fireball Scroll', self.sprites.get('fireball_scroll'), render_order=RenderOrder.ITEM,
+                    item = Entity(x, y, 'Fireball Scroll', 'fireball_scroll', render_order=RenderOrder.ITEM,
                         item=item_component)
                     entities.append(item)
                 elif item_chance < 90:
                     item_component = Item(use_function=cast_confuse, targeting=True, targeting_message=Message(
                         'Left-click an enemy to confuse it, or right-click to cancel.', pygame.Color('cyan')))
-                    item = Entity(x, y, 'Confusion Scroll', self.sprites.get('confusion_scroll'), render_order=RenderOrder.ITEM,
+                    item = Entity(x, y, 'Confusion Scroll', 'confusion_scroll', render_order=RenderOrder.ITEM,
                         item=item_component)
                     entities.append(item)
                 else:
                     item_component = Item(use_function=cast_lightning, damage=20, maximum_range=5)
-                    item = Entity(x, y, 'Lightning Scroll', self.sprites.get('lightning_scroll'), render_order=RenderOrder.ITEM,
+                    item = Entity(x, y, 'Lightning Scroll', 'lightning_scroll', render_order=RenderOrder.ITEM,
                                   item=item_component)
                     entities.append(item)
 

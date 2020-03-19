@@ -55,6 +55,8 @@ def get_constants():
     message_log_height = screen_height - message_log_y
     message_log_rect = pygame.Rect((message_log_x, message_log_y), (message_log_width, message_log_height))
 
+    main_menu_rect = pygame.Rect((0,0), (screen_width, screen_height))
+
     inventory_menu_x = map_on_screen_x + 10
     inventory_menu_y = map_on_screen_y + 10
     inventory_menu_width = map_on_screen_width - 20
@@ -76,6 +78,39 @@ def get_constants():
     
     theme1 = "assets/themes/theme1.json"
     
+    sprites = get_sprites(tile_size)
+
+    constants = {
+        'title': title,
+        'screen_width': screen_width,
+        'screen_height': screen_height,
+        'map_width': map_width,
+        'map_height': map_height,
+        'map_rect': map_rect,
+        'camera_width': camera_width,
+        'camera_height': camera_height,
+        'health_bar_bg_color': health_bar_bg_color,
+        'health_bar_fg_color': health_bar_fg_color,
+        'health_bar_rect': health_bar_rect,
+        'entity_info_rect': entity_info_rect,
+        'message_log_rect': message_log_rect,
+        'main_menu_rect': main_menu_rect,
+        'inventory_menu_rect': inventory_menu_rect,
+        'start_hp': start_hp,
+        'start_def': start_def,
+        'start_power': start_power,
+        'start_inventory': start_inventory,
+        'max_monsters_per_room': max_monsters_per_room,
+        'max_items_per_room': max_items_per_room,
+        'tile_width': tile_width,
+        'tile_height': tile_height,
+        'theme1': theme1,
+        'sprites': sprites
+    }
+
+    return constants
+
+def get_sprites(tile_size):
     sprites = {
         'blank':  load_sprite("assets/sprites/blank.png", tile_size),
         'player': load_sprite("assets/sprites/at.png", tile_size),
@@ -94,35 +129,7 @@ def get_constants():
         'confusion_scroll': load_sprite("assets/sprites/confusion_scroll.png", tile_size),
         'image_not_found_path': load_sprite("assets/sprites/image_not_found.png", tile_size)
     }
-
-    constants = {
-        'title': title,
-        'screen_width': screen_width,
-        'screen_height': screen_height,
-        'map_width': map_width,
-        'map_height': map_height,
-        'map_rect': map_rect,
-        'camera_width': camera_width,
-        'camera_height': camera_height,
-        'health_bar_bg_color': health_bar_bg_color,
-        'health_bar_fg_color': health_bar_fg_color,
-        'health_bar_rect': health_bar_rect,
-        'entity_info_rect': entity_info_rect, 
-        'message_log_rect': message_log_rect, 
-        'inventory_menu_rect': inventory_menu_rect,
-        'start_hp': start_hp,
-        'start_def': start_def,
-        'start_power': start_power,
-        'start_inventory': start_inventory,
-        'max_monsters_per_room': max_monsters_per_room,
-        'max_items_per_room': max_items_per_room,
-        'tile_width': tile_width,
-        'tile_height': tile_height,
-        'theme1': theme1,
-        'sprites': sprites
-    }
-
-    return constants
+    return sprites
 
 # screen, tile_sheet, player, entities, game_map = get_game_variables(constants)
 def get_game_variables():
@@ -130,16 +137,14 @@ def get_game_variables():
     constants = get_constants()
     pygame.display.set_caption(constants['title'])
     
-    manager = UIManager(width=constants['screen_width'], height=constants['screen_height'], theme=constants['theme1'])
-    
-    message_log = MessageLog(rect=constants['message_log_rect'], manager=manager.gui)
-    
-    manager.init_message_log(message_log)
+    manager = UIManager(width=constants['screen_width'], height=constants['screen_height'],
+        main_menu_rect=constants['main_menu_rect'],
+        message_log_rect=constants['message_log_rect'], theme=constants['theme1'])
 
     fighter_component = Fighter(hp=constants['start_hp'], defense=constants['start_def'], power=constants['start_power'])
     inventory_component = Inventory(constants['start_inventory'])
     player = Entity(x=constants['map_width'] // 2, y=constants['map_height'] // 2, name='player',
-        sprite=constants['sprites'].get('player'), dead_sprite=constants['sprites'].get('bones'),
+        sprite_type='player', dead_sprite_type='bones',
         render_order=RenderOrder.ACTOR, fighter=fighter_component, inventory=inventory_component)
     
     entities = [player]
@@ -150,10 +155,10 @@ def get_game_variables():
 
     entity_info = EntityInfo(constants['entity_info_rect'])
 
-    map_surf = MapSurface(constants['map_rect'])
+    map_surf = MapSurface(constants['map_rect'], constants['sprites'])
 
-    game_map = GameMap(constants['map_width'], constants['map_height'], constants['sprites'])
-    game_map.make_map(player, entities, constants['max_monsters_per_room'], 
+    game_map = GameMap(constants['map_width'], constants['map_height'])
+    game_map.make_map(player, entities, constants['max_monsters_per_room'],
             constants['max_items_per_room'])
 
     camera = Camera(game_map, player, constants['camera_width'], constants['camera_height'])
