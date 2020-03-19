@@ -1,15 +1,19 @@
 import math
 
-
+from components.ai import BasicMonster
+from components.fighter import Fighter
 from render_functions import RenderOrder
+from components.item import Item
+from components.inventory import Inventory
 from utility import astar
 
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
     """
-    def __init__(self, x, y, name, sprite_type, dead_sprite_type=None, blocks=False, render_order=RenderOrder.CORPSE,
-            fighter=None, ai=None, item=None, inventory=None):
+    def __init__(self, x: int, y: int, name: str, sprite_type: str, dead_sprite_type: str = None,
+                 blocks: bool = False, render_order: int = RenderOrder.CORPSE, fighter: Fighter = None,
+                 ai: BasicMonster = None, item: Item = None, inventory: Inventory = None):
         self.x = x
         self.y = y
         self.name = name
@@ -35,8 +39,8 @@ class Entity:
             self.inventory.owner = self
 
     def copy(self):
-        new_entity = Entity(self.x, self.y, self.name, self.sprite_type, self.dead_sprite_type, self.blocks, self.render_order,
-                self.fighter, self.ai, self.item, self.inventory)
+        new_entity = Entity(self.x, self.y, self.name, self.sprite_type, self.dead_sprite_type, self.blocks, 
+                            self.render_order, self.fighter, self.ai, self.item, self.inventory)
         return new_entity
 
     def move(self, dx, dy):

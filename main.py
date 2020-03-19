@@ -47,17 +47,20 @@ def main():
                 exit_game = action.get('exit')
                 
                 if new_game:
+                    screen, temp_manager, screen_health_bar, entity_info, player, entities, game_map, map_surf, camera = get_game_variables()
                     game_state = GameStates.PLAYERS_TURN
                     show_main_menu = False
 
                 elif load_saved_game:
                     try:
                         player, entities, game_map, camera, game_state = load_game()
+                        camera.game_map = game_map
                         show_main_menu = False
                     except FileNotFoundError:
                         show_load_error_message = True
 
                 elif exit_game:
+                    game_running = False
                     break
             manager.update(time_delta)
             manager.gui.draw_ui(screen)
