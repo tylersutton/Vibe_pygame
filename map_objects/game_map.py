@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, shuffle
 
 import pygame
 
@@ -6,10 +6,13 @@ from components.ai import BasicMonster
 from components.fighter import Fighter
 from components.item import Item
 from entity import Entity
+from graph import makeMapGraph
 from item_functions import cast_confuse, cast_fireball, cast_lightning, heal
+from map_objects.room import Room
 from map_objects.tile import Tile
 from render_functions import RenderOrder
 from ui.elements.game_messages import Message
+from utility import line, line_directions
 
 class GameMap:
     def __init__(self, width, height):
@@ -17,9 +20,10 @@ class GameMap:
         self.height = height
         self.tiles = self.init_tiles()
         self.bg_tiles = self.init_bg_tiles()
+        self.rooms = []
 
     def init_tiles(self):
-        tiles = [[Tile('blank', False) for y in range(self.height)] for x in range(self.width)]
+        tiles = [[Tile('wall', True) for y in range(self.height)] for x in range(self.width)]
         return tiles
     
     def init_bg_tiles(self):
@@ -41,123 +45,72 @@ class GameMap:
                 bg_tiles[x][y] = Tile(grass_img, False)
         return bg_tiles
 
-    def make_map(self, player, entities, max_monsters_per_room, max_items_per_room):
-        fill_percentage = 45
-        map_bound = 3
-        spawn_radius = 3
-        path_half_width = (self.width + self.height) // 16
 
-        for y in range(self.height):
-            for x in range(self.width):
-                if randint(0,100) <= fill_percentage:
-                    self.tiles[x][y].blocked = True
-                    self.tiles[x][y].block_sight = True
-                elif x < map_bound or y < map_bound or x >= self.width-map_bound or y >= self.height-map_bound:
-                    self.tiles[x][y].blocked = True
-                    self.tiles[x][y].block_sight = True
+    def make_map(self, player, entities, graph_width, graph_height, min_room_size, max_room_size, max_monsters_per_room, max_items_per_room):
+        map_border = 3
+        self.rooms = [None for _ in range(graph_width*graph_height)]
+        map_graph = makeMapGraph(graph_width, graph_height)
+        sector_width = self.width//graph_width
+        sector_height = self.height//graph_height
+        for y in range(graph_height):
+            for x in range(graph_width):
+                if map_graph.isNode(y*map_graph.width + x):
+                    room_width = randint(min_room_size, min(max_room_size, sector_width-1))
+                    room_height = randint(min_room_size, min(max_room_size, sector_height-1))
+                    room_start_x = x*sector_width + randint(0, sector_width - room_width)
+                    room_start_x = max(map_border, min(room_start_x, self.width - room_width - map_border))
+                    room_start_y = y*sector_height + randint(0, sector_height - room_height)
+                    room_start_y = max(map_border, min(room_start_y, self.height - room_height - map_border))
                 
-                #temp addition to see map
-                self.tiles[x][y].explored = False
-        
-        #open_side = randint(0,3)
-        open_side = 3
-        print(open_side)
-        y_mid = self.height // 2
-        x_mid = self.width // 2
-        y_bot = 0
-        y_top = 0
-        x_bot = 0
-        x_top = 0
+                    room = Room(pygame.Rect(((room_start_x, room_start_y)), (room_width, room_height)))
+                    self.rooms[y*graph_width + x] = room
+                    self.create_room(room)
 
-        if open_side == 0: #right side
-            x_bot = self.width - (path_half_width*2)
-            x_top = self.width
-            y_bot = y_mid - path_half_width
-            y_top = y_mid + path_half_width
-        if open_side == 1: #top side
-            x_bot = x_mid - path_half_width
-            x_top = x_mid + path_half_width
-            y_bot = 0
-            y_top = (path_half_width*2)
-        if open_side == 2: #left side
-            x_bot = 0
-            x_top = path_half_width*2
-            y_bot = y_mid - path_half_width
-            y_top = y_mid + path_half_width
+        # create paths between rooms based on graph edges
+        for u, v, _ in map_graph.graph:
+            self.create_tunnel(self.rooms[u], self.rooms[v])
+        player.x = 0
+        player.y = 0
+        while (player.x, player.y) == (0, 0):
+            room_num = randint(0, len(self.rooms)-1)
+            if self.rooms[room_num]:
+                player.x, player.y = self.rooms[room_num].center()
 
-        if open_side == 3: #bottom side
-            x_bot = x_mid - path_half_width
-            x_top = x_mid + path_half_width
-            y_bot = self.height - (path_half_width*2)
-            y_top = self.height
-        
-        for y in range(y_bot, y_top):
-            for x in range(x_bot, x_top):
+        # TO DO: make map using graph
+        self.fill_map_sprites()
+
+        # self.place_entities(entities, max_monsters_per_room, max_items_per_room)
+
+    def create_room(self, room):
+        # go through the tiles in the rectangle and make them passable
+        for x in range(room.x1 + 1, room.x2):
+            for y in range(room.y1 + 1, room.y2):
                 self.tiles[x][y].blocked = False
                 self.tiles[x][y].block_sight = False
 
-        for x in range(12):
-            self.smooth_tiles()
-        
-        self.fill_map_sprites()
+    def create_tunnel(self, room1, room2):
+        x1, y1 = room1.center()
+        x2, y2 = room2.center()
+        for j in range(-1,2):
+            for i in range(-1,2):
+                path = line_directions(x1+i, y1+j, x2+i, y2+j)
+                x = x1+i
+                y = y1+j
+                for dx, dy in path:
+                    x += dx
+                    y += dy
+                    self.tiles[x][y].blocked = False
+                    self.tiles[x][y].block_sight = False
 
-        (player.x, player.y) = self.find_spawn(spawn_radius)
-        self.place_entities(entities, max_monsters_per_room, max_items_per_room)
 
-
-    def find_spawn(self, radius):
-        spawn_found = False
-        while (not spawn_found):
-            spawn_found = True
-            new_x = randint(radius,self.width-radius)
-            new_y = randint(radius,self.height-radius)
-            for x in range( new_x - radius, new_x + radius):
-                for y in range(new_y - radius, new_y + radius):
-                    x_dist = new_x - x
-                    y_dist = new_y - y
-                    if(((x_dist*x_dist) + (y_dist*y_dist)) <= (radius*radius)) and self.tiles[x][y].blocked:
-                        spawn_found = False
-                    if not spawn_found:
-                        break
-                if not spawn_found:
-                    break
-
-        return (new_x, new_y)
 
     def fill_map_sprites(self):
         for y in range(self.height):
             for x in range(self.width):
                 wall = self.tiles[x][y].blocked
-                if wall:
-                    self.tiles[x][y].tile_type = 'wall'
+                if not wall:
+                    self.tiles[x][y].tile_type = 'blank'
                 
-    def smooth_tiles(self):
-        temp = [[Tile('blank', False) for y in range(self.height)] for x in range(self.width)]
-        for y in range(self.height):
-            for x in range(self.width):
-                neighbors = self.count_neighbors(x, y)
-                if (neighbors > 4):
-                    temp[x][y].blocked = True
-                    temp[x][y].block_sight = True
-                elif (neighbors < 4):
-                    temp[x][y].blocked = False
-                    temp[x][y].block_sight = False
-                else:
-                    temp[x][y].blocked = self.tiles[x][y].blocked
-                    temp[x][y].block_sight = self.tiles[x][y].block_sight
-        self.tiles = temp
- 
-
-    def count_neighbors(self, x, y):
-        num_neighbors = 0
-        for j in range (y-1, y+2):
-            for i in range(x-1, x+2):
-                if (i >= 0 and j >= 0 and j < self.height and i < self.width):
-                    if ((j != y or i != x) and self.tiles[i][j].blocked and self.tiles[i][j].block_sight):
-                        num_neighbors = num_neighbors + 1
-                else:
-                    num_neighbors = num_neighbors + 1
-        return num_neighbors
 
     def place_entities(self, entities, max_monsters_per_room, max_items_per_room):
         # Get a random number of monsters
