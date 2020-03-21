@@ -109,6 +109,7 @@ def play_game(game_map, map_surf, camera, player, entities, screen, manager, scr
             if inventory_index is None:
                 inventory_index = button_action.get("inventory_index")
             fullscreen = action.get("fullscreen")
+            new_map = action.get("new_map")
 
             left_click = mouse_action.get('left_click')
             right_click = mouse_action.get('right_click')

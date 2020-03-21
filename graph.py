@@ -147,10 +147,11 @@ class Graph:
         added_edges = 0
 
         while added_edges < num_edges:
-            self.graph.append(addable_edges[0])
-            addable_edges.pop(0)
             if len(addable_edges) == 0:
                 break
+            self.graph.append(addable_edges[0])
+            addable_edges.pop(0)
+            
         return
 
             

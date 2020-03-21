@@ -29,10 +29,10 @@ def get_constants():
     map_on_screen_height = screen_height - map_on_screen_y - 120
     map_rect = pygame.Rect((map_on_screen_x, map_on_screen_y), (map_on_screen_width, map_on_screen_height))
 
-    camera_width = 100
-    camera_height = 75
-    #camera_width = 42
-    #camera_height = 24
+    #camera_width = 100
+    #camera_height = 75
+    camera_width = 42
+    camera_height = 24
     
     # camera_width = 56
     # camera_height = 32
@@ -71,13 +71,10 @@ def get_constants():
     start_def = 2
     start_power = 5
     start_inventory = 20
+    
+    map_constants = get_map_constants()
 
-    map_graph_width = 4
-    map_graph_height = 3
-    min_room_size = 12
-    max_room_size = 20
-    max_monsters_per_room = 20
-    max_items_per_room = 200
+    map_graph_constants = get_map_graph_constants()
 
     tile_width = map_on_screen_width // camera_width
     tile_height = map_on_screen_height // camera_height
@@ -107,12 +104,8 @@ def get_constants():
         'start_def': start_def,
         'start_power': start_power,
         'start_inventory': start_inventory,
-        'map_graph_width': map_graph_width,
-        'map_graph_height': map_graph_height,
-        'min_room_size': min_room_size,
-        'max_room_size': max_room_size,
-        'max_monsters_per_room': max_monsters_per_room,
-        'max_items_per_room': max_items_per_room,
+        'map_constants': map_constants,
+        'map_graph_constants': map_graph_constants,
         'tile_width': tile_width,
         'tile_height': tile_height,
         'theme1': theme1,
@@ -120,6 +113,20 @@ def get_constants():
     }
 
     return constants
+
+def get_map_constants():
+    min_room_size = 10
+    max_room_size = 15
+    max_monsters_per_room = 5
+    max_items_per_room = 4
+    return min_room_size, max_room_size, max_monsters_per_room, max_items_per_room
+
+def get_map_graph_constants():
+    min_graph_width = 4
+    min_graph_height = 3
+    max_graph_width = 4
+    max_graph_height = 3
+    return min_graph_width, min_graph_height, max_graph_width, max_graph_height
 
 def get_sprites(tile_size):
     sprites = {
@@ -169,9 +176,7 @@ def get_game_variables():
     map_surf = MapSurface(constants['map_rect'], constants['sprites'])
 
     game_map = GameMap(constants['map_width'], constants['map_height'])
-    game_map.make_map(player, entities, constants['map_graph_width'], constants['map_graph_height'],
-                      constants['min_room_size'], constants['max_room_size'],
-                      constants['max_monsters_per_room'], constants['max_items_per_room'])
+    game_map.make_map(player, entities, constants['map_constants'], constants['map_graph_constants'])
 
     camera = Camera(game_map, player, constants['camera_width'], constants['camera_height'])
 

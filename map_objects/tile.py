@@ -5,7 +5,7 @@ class Tile:
     def __init__(self, tile_type, blocked, block_sight=None):
         self.tile_type = tile_type
         self.blocked = blocked
-        self.explored = True # temp for now
+        self.explored = False # temp for now
         
         # By default, if a tile is blocked, it also blocks sight
         if block_sight is None:
